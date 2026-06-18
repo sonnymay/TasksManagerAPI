@@ -2,6 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
+[![CI](https://github.com/sonnymay/TasksManagerAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/sonnymay/TasksManagerAPI/actions/workflows/ci.yml)
 
 Clean REST API for task management, built with FastAPI, SQLAlchemy, and SQLite/PostgreSQL-compatible models.
 
