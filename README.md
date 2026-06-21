@@ -1,83 +1,91 @@
 # Task Manager API
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-compatible-4169E1?style=flat-square&logo=postgresql&logoColor=white) ![tests](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square&logo=pytest&logoColor=white) ![CI](https://github.com/sonnymay/TasksManagerAPI/actions/workflows/ci.yml/badge.svg) ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-compatible-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![CI](https://github.com/sonnymay/TasksManagerAPI/actions/workflows/ci.yml/badge.svg)
 
-A production-ready RESTful task management API with full CRUD, Pydantic validation, auto-generated Swagger docs, and an isolated pytest test suite. Runs on SQLite locally and PostgreSQL in production.
+A small RESTful task-management API built with FastAPI, SQLAlchemy, and Pydantic. It supports task CRUD, completion updates, automatic Swagger docs, and local SQLite development with a `DATABASE_URL` path for production databases.
+
+## Live Swagger Demo
+
+Deploy to Render/Railway to generate a live Swagger URL.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+After deployment, open `/docs` on the deployed service URL for Swagger UI.
 
 ## Features
 
-- **Full CRUD** - create, read, update, and delete tasks with title, description, priority, due date, and status
-- - **Pydantic v2 validation** - strict request/response schemas with automatic error messages on bad input
-  - - **Auto-generated docs** - Swagger UI at `/docs`, ReDoc at `/redoc` - zero manual spec writing
-    - - **SQLAlchemy ORM** - clean model layer; swap SQLite for PostgreSQL with one env variable
-      - - **CORS middleware** - ready for browser-based frontend integration
-        - - **pytest test suite** - all CRUD endpoints covered against an isolated SQLite test database
-          - - **GitHub Actions CI** - lint and tests run on every push to main
-           
-            - ## Tech Stack
-           
-            - | Layer | Technology |
-            - |---|---|
-            - | Framework | FastAPI 0.110+ |
-            - | ORM | SQLAlchemy 2.0 |
-            - | Validation | Pydantic v2 |
-            - | Database | SQLite (dev) / PostgreSQL (prod) |
-            - | Testing | pytest + httpx |
-            - | CI | GitHub Actions |
-           
-            - ## Quickstart
-           
-            - ```bash
-              git clone https://github.com/sonnymay/TasksManagerAPI.git
-              cd TasksManagerAPI
-              pip install -r requirements.txt
-              uvicorn app.main:app --reload
-              ```
+- Create, list, read, update, complete, and delete tasks
+- Pydantic request and response schemas
+- SQLAlchemy model and session management
+- SQLite by default, with PostgreSQL-compatible `DATABASE_URL` configuration
+- Swagger UI at `/docs` and ReDoc at `/redoc`
+- GitHub Actions CI running pytest and Python compile checks
 
-              Then open **http://localhost:8000/docs** for the interactive Swagger UI.
+## Tech Stack
 
-              ## API Endpoints
+| Layer | Technology |
+|---|---|
+| Framework | FastAPI |
+| ORM | SQLAlchemy |
+| Validation | Pydantic |
+| Database | SQLite locally, PostgreSQL-compatible via `DATABASE_URL` |
+| Server | Uvicorn |
+| Testing | pytest + httpx |
+| CI | GitHub Actions |
 
-              | Method | Endpoint | Description |
-              |---|---|---|
-              | `GET` | `/tasks` | List all tasks |
-              | `POST` | `/tasks` | Create a task |
-              | `GET` | `/tasks/{id}` | Get a task by ID |
-              | `PUT` | `/tasks/{id}` | Update a task |
-              | `DELETE` | `/tasks/{id}` | Delete a task |
+## Quickstart
 
-              ## Running Tests
+```bash
+git clone https://github.com/sonnymay/TasksManagerAPI.git
+cd TasksManagerAPI
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+uvicorn app.main:app --reload
+```
 
-              ```bash
-              pip install -r requirements-dev.txt
-              pytest -v
-              ```
+Open `http://localhost:8000/docs` for the interactive Swagger UI.
 
-              Tests use an isolated in-memory SQLite DB - no external dependencies required.
+## API Endpoints
 
-              ## Project Structure
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Health-style welcome message |
+| `GET` | `/tasks/` | List all tasks |
+| `POST` | `/tasks/` | Create a task |
+| `GET` | `/tasks/{task_id}` | Get one task |
+| `PUT` | `/tasks/{task_id}` | Update a task |
+| `PATCH` | `/tasks/{task_id}/complete` | Mark a task completed |
+| `DELETE` | `/tasks/{task_id}` | Delete a task |
 
-              ```
-              TasksManagerAPI/
-              app/
-                  main.py        - FastAPI app, CORS, router wiring
-                  models.py      - SQLAlchemy ORM models
-                  schemas.py     - Pydantic request/response schemas
-                  routes/
-                      tasks.py   - CRUD route handlers
-              tests/
-                  test_tasks.py  - pytest test suite
-              requirements.txt
-              requirements-dev.txt
-              ```
+## Running Tests
 
-              ## Design Patterns Demonstrated
+```bash
+pytest
+```
 
-              - **Dependency injection** for DB sessions via `Depends(get_db)`
-              - - **Schema/model separation** - Pydantic schemas never bleed into SQLAlchemy models
-                - - **Test isolation** - per-test DB state, no cross-test pollution
-                  - - **CI gate** - tests must pass before merge
-                   
-                    - ## License
-                   
-                    - MIT
+## Project Structure
+
+```text
+app/
+  main.py          # FastAPI app, CORS, router wiring
+  database.py      # SQLAlchemy engine/session setup
+  models.py        # SQLAlchemy Task model
+  schemas.py       # Pydantic request/response schemas
+  routes/tasks.py  # Task CRUD routes
+tests/
+  test_tasks.py    # API tests
+```
+
+## What This Code Shows
+
+- FastAPI routing with dependency-injected database sessions
+- Clear separation between SQLAlchemy models and Pydantic schemas
+- Environment-based database configuration
+- Small, readable API surface with automated OpenAPI docs
+- CI-backed backend project hygiene
+
