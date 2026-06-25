@@ -12,41 +12,40 @@ from app.main import app
 
 @pytest.fixture()
 def client(tmp_path):
-        engine = create_engine(
-                    f"sqlite:///{tmp_path / 'tasks-test.db'}",
-                    connect_args={"check_same_thread": False},
-        )
-        testing_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        models.Base.metadata.create_all(bind=engine)
+    engine = create_engine(
+        f"sqlite:///{tmp_path / 'tasks-test.db'}",
+        connect_args={"check_same_thread": False},
+    )
+    testing_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    models.Base.metadata.create_all(bind=engine)
 
     def override_get_db():
-                db = testing_session()
-                try:
-                                yield db
-finally:
+        db = testing_session()
+        try:
+            yield db
+        finally:
             db.close()
 
     app.dependency_overrides[database.get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
-
 def test_task_crud_flow(client):
-        create_response = client.post(
-                    "/tasks/",
-                    json={"title": "Ship portfolio polish", "description": "Make GitHub recruiter-ready"},
-        )
-        assert create_response.status_code == 200
-        task = create_response.json()
-        assert task["title"] == "Ship portfolio polish"
-        assert task["completed"] is False
+    create_response = client.post(
+        "/tasks/",
+        json={"title": "Ship portfolio polish", "description": "Make GitHub recruiter-ready"},
+    )
+    assert create_response.status_code == 200
+    task = create_response.json()
+    assert task["title"] == "Ship portfolio polish"
+    assert task["completed"] is False
 
     list_response = client.get("/tasks/")
     assert list_response.status_code == 200
     assert list_response.json() == [task]
 
     update_response = client.put(
-                f"/tasks/{task['id']}",
-                json={"title": "Ship tests", "description": "Cover the API flow"},
+        f"/tasks/{task['id']}",
+        json={"title": "Ship tests", "description": "Cover the API flow"},
     )
     assert update_response.status_code == 200
     assert update_response.json()["title"] == "Ship tests"
@@ -61,65 +60,61 @@ def test_task_crud_flow(client):
 
     assert client.get(f"/tasks/{task['id']}").status_code == 404
 
+
 def test_missing_task_returns_404(client):
-        response = client.get("/tasks/999")
+    response = client.get("/tasks/999")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Task not found"}
 
+
 def test_get_tasks_pagination(client):
-        # Seed 5 tasks
-        for i in range(1, 6):
-                    client.post("/tasks/", json={"title": f"Task {i}", "description": None})
+    for i in range(1, 6):
+        client.post("/tasks/", json={"title": f"Task {i}", "description": None})
 
-        all_tasks = client.get("/tasks/").json()
-        assert len(all_tasks) == 5
+    all_tasks = client.get("/tasks/").json()
+    assert len(all_tasks) == 5
 
-    # First page: skip=0, limit=2
-        page1 = client.get("/tasks/?skip=0&limit=2").json()
-        assert len(page1) == 2
-        assert page1[0]["title"] == "Task 1"
-        assert page1[1]["title"] == "Task 2"
+    page1 = client.get("/tasks/?skip=0&limit=2").json()
+    assert len(page1) == 2
+    assert page1[0]["title"] == "Task 1"
+    assert page1[1]["title"] == "Task 2"
 
-    # Second page: skip=2, limit=2
-        page2 = client.get("/tasks/?skip=2&limit=2").json()
-        assert len(page2) == 2
-        assert page2[0]["title"] == "Task 3"
-        assert page2[1]["title"] == "Task 4"
+    page2 = client.get("/tasks/?skip=2&limit=2").json()
+    assert len(page2) == 2
+    assert page2[0]["title"] == "Task 3"
+    assert page2[1]["title"] == "Task 4"
 
-    # Third page: skip=4, limit=2 — only one task left
-        page3 = client.get("/tasks/?skip=4&limit=2").json()
-        assert len(page3) == 1
-        assert page3[0]["title"] == "Task 5"
+    page3 = client.get("/tasks/?skip=4&limit=2").json()
+    assert len(page3) == 1
+    assert page3[0]["title"] == "Task 5"
 
-    # skip beyond total returns empty list
-        empty = client.get("/tasks/?skip=100&limit=10").json()
-        assert empty == []
+    empty = client.get("/tasks/?skip=100&limit=10").json()
+    assert empty == []
+
 
 def test_get_tasks_pagination_invalid_params(client):
-        # Negative skip should be rejected
-        assert client.get("/tasks/?skip=-1").status_code == 422
+    assert client.get("/tasks/?skip=-1").status_code == 422
+    assert client.get("/tasks/?limit=0").status_code == 422
+    assert client.get("/tasks/?limit=1001").status_code == 422
 
-    # limit=0 is below ge=1, should be rejected
-        assert client.get("/tasks/?limit=0").status_code == 422
-
-    # limit above max (1000) should be rejected
-        assert client.get("/tasks/?limit=1001").status_code == 422
 
 def test_update_nonexistent_task_returns_404(client):
-        response = client.put(
-                    "/tasks/999",
-                    json={"title": "Ghost", "description": "Does not exist"},
-        )
-        assert response.status_code == 404
-        assert response.json() == {"detail": "Task not found"}
+    response = client.put(
+        "/tasks/999",
+        json={"title": "Ghost", "description": "Does not exist"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Task not found"}
+
 
 def test_complete_nonexistent_task_returns_404(client):
-        response = client.patch("/tasks/999/complete")
-        assert response.status_code == 404
-        assert response.json() == {"detail": "Task not found"}
+    response = client.patch("/tasks/999/complete")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Task not found"}
+
 
 def test_delete_nonexistent_task_returns_404(client):
-        response = client.delete("/tasks/999")
-        assert response.status_code == 404
-        assert response.json() == {"detail": "Task not found"}
+    response = client.delete("/tasks/999")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Task not found"}
