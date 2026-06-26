@@ -11,6 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - JWT authentication middleware
 - Rate limiting per API key
 - OpenAPI documentation improvements
+- Task tagging and label-based filtering
 
 ---
 
